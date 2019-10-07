@@ -1,0 +1,131 @@
+---
+title: "Quasi and Psedo Random Process"
+author: "Vincent Lee"
+date: "10/4/2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Sampling Methods
+This project facilitates understanding of generating pseudo-random and quasi-random numbers and application of Monte Carlo method.
+
+
+### 1. Generate uniformly distributed random numbers
+```{r}
+#simulate pseudo random numbers uniformly distribution on [0,1]
+#pseudo-random process will follow a pattern over time
+library(random)
+set.seed(100)
+Sample <-runif(1000,0,1)
+
+
+#quasi-random will reduce the gaps between random numbers over time
+nFlips <- 1000
+dataFromRandom<-randomNumbers(n=nFlips, min=0, max=1, col=1, base=2, check=TRUE)
+head(dataFromRandom)
+
+```
+
+###2. Turn binary sequence to uniform random numbers
+Turn your sequence of {0,1} into uniform random numbers on [0,1].
+
+Create function that turns a sequence of zeros and ones of length n into decimal form.
+```{r}
+bitsToInt<-function(x) {
+    packBits(rev(c(rep(FALSE, 32-length(x)%%32), as.logical(x))), "integer")
+}
+bitsToInt(c(1,1,1,1,1,0))
+```
+
+Turn the sequence of zeros and ones dataFromRandom of length 1000 into a matrix with 10 columns and 100 rows
+```{r}
+Binary.matrix<-matrix(dataFromRandom,ncol=10)
+head(Binary.matrix)
+```
+
+Transform each row of the matrix into decimal format using bin2dec() and divide the numbers by 210 to make real numbers in [0,1].
+```{r}
+dataFromRandom.dec<-apply(Binary.matrix,1,bitsToInt)/2^10
+head(dataFromRandom.dec)
+```
+
+###3. Test random number generators
+
+###3.1 Test Sample from runif()
+
+Plot the histogram of "Sample"
+```{r}
+Sample.histogram<-hist(Sample)
+Sample.histogram
+```
+
+Test the histogram
+```{r}
+(Sample.histogram.mean<-mean(Sample.histogram$density))
+```
+
+```{r}
+(Sample.histogram.sd<-sd(Sample.histogram$density))
+```
+
+```{r}
+plot(Sample.histogram,freq=FALSE,ylim=c(0,Sample.histogram.mean+2*Sample.histogram.sd))
+#h is y value, v is x value
+abline(h = Sample.histogram.mean)
+abline(h = Sample.histogram.mean+1.96*Sample.histogram.sd,
+       col="red",lty=2)
+abline(h = Sample.histogram.mean-1.96*Sample.histogram.sd,
+       col="red",lty=2)
+```
+
+### Moments of the Sample
+
+```{r}
+(Sample.histogram.mean<-mean(Sample))
+(Sample.histogram.sd<-sd(Sample))
+```
+
+### Summary of the Sample
+
+```{r}
+summary(Sample)
+```
+
+### Testing on quasi-random numbers from dataFromRandom
+
+```{r}
+(Sample.histogram.mean<-mean(Sample.histogram$density))
+(Sample.histogram.sd<-sd(Sample.histogram$density))
+plot(Sample.histogram,freq=FALSE,ylim=c(0,Sample.histogram.mean+2*Sample.histogram.sd))
+abline(h=Sample.histogram.mean)
+abline(h=Sample.histogram.mean+1.96*Sample.histogram.sd,col="red",lty=2)
+abline(h=Sample.histogram.mean-1.96*Sample.histogram.sd,col="red",lty=2)
+```
+
+### Moments
+Variance for quasi-random numbers is higher than pseudo-random numbers: 
+
+```{r}
+(Sample.mean<-mean(dataFromRandom.dec))
+(Sample.variance<-var(dataFromRandom.dec))
+```
+
+### Test independence of the sequence of zeros and ones
+
+### Turning point test
+
+Turning point test is to test whether sequence of numbers is random or not. 
+Null hypothesis is that there is randomness in the number sequence. 
+Alaternative hypothesis is serial correlation in the sequence. If test has significantly small p-value (less than 0.05), we reject the null hypothesis. 
+
+Based on findings below, dataFromRandom is indeed not so random as a proof for pseudo-random numbers: 
+
+```{r}
+suppressWarnings(library(randtests))
+turning.point.test(dataFromRandom.dec)
+```
+
+
