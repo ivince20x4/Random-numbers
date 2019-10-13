@@ -18,7 +18,7 @@ This project facilitates understanding of generating pseudo-random and quasi-ran
 #simulate pseudo random numbers uniformly distribution on [0,1]
 #pseudo-random process will follow a pattern over time
 library(random)
-set.seed(100)
+set.seed(10)
 Sample <-runif(1000,0,1)
 
 
@@ -127,5 +127,3 @@ Based on findings below, dataFromRandom is indeed not so random as a proof for p
 suppressWarnings(library(randtests))
 turning.point.test(dataFromRandom.dec)
 ```
-
-
